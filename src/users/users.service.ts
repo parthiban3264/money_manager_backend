@@ -84,7 +84,7 @@ async login(data: { email: string; password: string }) {
   const payload = { sub: user.id, email: user.email };
 
   // Generate access token only
-  const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '30d' });
+  const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '75d' });
 
   // Return token and user info (without password)
   const { password, ...result } = user;

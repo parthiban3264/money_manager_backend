@@ -11,18 +11,17 @@ import { TransferModule } from './Transfer/transfer.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { JwtStrategy } from './auth/jwt.strategy';
-import { CategoryModule } from './category/category.module';
+// import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // 👈 .env load
     NoteModule,
     TransferModule,
-    CategoryModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET || '46501720c4de4deea09d4f960fa2313f',
-      signOptions: { expiresIn: '30d' },
+      signOptions: { expiresIn: '75d' },
     }),
 
   ],
