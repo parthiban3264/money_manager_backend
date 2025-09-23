@@ -3,14 +3,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// datasource db {
-//   provider = "mysql"
-//   url      = "mysql://schoolAttendance:Sensarsoft%40123@localhost:3306/money_manager"
-// }
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://schoolAttendance:Sensarsoft%40123@localhost:3306/money_manager"
 }
+// datasource db {
+//   provider = "mysql"
+//   url      = env("DATABASE_URL")
+// }
 
 model User {
   id           Int           @id @default(autoincrement())
