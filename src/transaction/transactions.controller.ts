@@ -99,23 +99,6 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-// @Post()
-// async create(@Body() data: {
-//   category: string;
-//   amount: number;
-//   type: string; // raw from Flutter
-//   note?: string;
-//   userId: number;
-//   date?: string;
-//   account?: string;
-// }) {
-//   return this.transactionsService.create({
-//     ...data,
-//     type: data.type as TransactionType,   // 👈 cast to Prisma enum
-//     date: data.date ? data.date : new Date().toISOString(),
-//   });
-// }
-
 @Post()
 async create(@Body() data: {
   category: string;

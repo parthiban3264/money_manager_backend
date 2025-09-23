@@ -1,37 +1,106 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+// import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+// import { NoteService } from './note.service';
+
+// @Controller('notes')
+// export class NoteController {
+//   constructor(private readonly noteService: NoteService) {}
+
+//   // Create
+//   @Post()
+//   async create(@Body() body: { title: string; content: string; userId: number,date:string }) {
+//     return this.noteService.create(body);
+//   }
+
+//   // Get all
+//   @Get()
+//   async findAll() {
+//     return this.noteService.findAll();
+//   }
+
+//   // Get one
+//   @Get(':id')
+//   async findOne(@Param('id') id: string) {
+//     return this.noteService.findOne(Number(id));
+//   }
+
+//   // Update
+//   @Put(':id')
+//   async update(@Param('id') id: string, @Body() body: { title?: string; content?: string }) {
+//     return this.noteService.update(Number(id), body);
+//   }
+
+//   // Delete
+//   @Delete(':id')
+//   async remove(@Param('id') id: string) {
+//     return this.noteService.remove(Number(id));
+//   }
+// }
+
+
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  ParseIntPipe,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { NoteService } from './note.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('notes')
+@UseGuards(JwtAuthGuard) // 👈 protect all endpoints
 export class NoteController {
   constructor(private readonly noteService: NoteService) {}
 
-  // Create
+  // ✅ Create a note for the logged-in user
   @Post()
-  async create(@Body() body: { title: string; content: string; userId: number,date:string }) {
-    return this.noteService.create(body);
+  async create(
+    @Body() body: { title: string; content: string; date?: string },
+    @Request() req: any,
+  ) {
+    return this.noteService.create({
+      ...body,
+      userId: req.user.userId, // ✅ secure, from JWT
+      date: body.date ?? new Date().toISOString(),
+    });
   }
 
-  // Get all
+  // ✅ Get all notes for logged-in user
   @Get()
-  async findAll() {
-    return this.noteService.findAll();
+  async findAll(@Request() req: any) {
+    return this.noteService.findAll(req.user.userId);
   }
 
-  // Get one
+  // ✅ Get single note by id (only if it belongs to the logged-in user)
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.noteService.findOne(Number(id));
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: any,
+  ) {
+    return this.noteService.findOne(id, req.user.userId);
   }
 
-  // Update
+  // ✅ Update note (only if it belongs to the logged-in user)
   @Put(':id')
-  async update(@Param('id') id: string, @Body() body: { title?: string; content?: string }) {
-    return this.noteService.update(Number(id), body);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { title?: string; content?: string },
+    @Request() req: any,
+  ) {
+    return this.noteService.update(id, body, req.user.userId);
   }
 
-  // Delete
+  // ✅ Delete note (only if it belongs to the logged-in user)
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.noteService.remove(Number(id));
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: any,
+  ) {
+    return this.noteService.remove(id, req.user.userId);
   }
 }

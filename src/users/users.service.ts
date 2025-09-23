@@ -36,7 +36,7 @@
 // }
 
 
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
@@ -90,4 +90,43 @@ async login(data: { email: string; password: string }) {
   const { password, ...result } = user;
   return { access_token: accessToken, user: result };
 }
+async getUser(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, name: true, email: true }, // include photo if needed
+    });
+    if (!user) throw new BadRequestException('User not found');
+    return user;
+  }
+
+  async updateUser(
+    id: number,
+    updateData: { name?: string; email?: string; oldPassword?: string; newPassword?: string },
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new BadRequestException('User not found');
+
+    let password = user.password;
+
+    // 🔑 Change password if requested
+    if (updateData.oldPassword && updateData.newPassword) {
+      const valid = await bcrypt.compare(updateData.oldPassword, user.password);
+      if (!valid) throw new BadRequestException('Invalid old password');
+      password = await bcrypt.hash(updateData.newPassword, 10);
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        name: updateData.name ?? user.name,
+        email: updateData.email ?? user.email,
+        password,
+      },
+      select: { id: true, name: true, email: true },
+    });
+
+    return updated;
+  }
+
+
 }
