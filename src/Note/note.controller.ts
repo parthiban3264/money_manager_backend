@@ -48,9 +48,12 @@ import {
   ParseIntPipe,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import { NoteService } from './note.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
+import { log } from 'console';
 
 @Controller('notes')
 @UseGuards(JwtAuthGuard) // 👈 protect all endpoints
@@ -102,5 +105,11 @@ export class NoteController {
     @Request() req: any,
   ) {
     return this.noteService.remove(id, req.user.userId);
+  }
+
+ @Delete('all/:userId') // now expects a numeric string in URL
+  async removeAll(@Param('userId', ParseIntPipe) userId: number) {
+    // Prisma expects a number
+    return this.noteService.removeAll(userId);
   }
 }

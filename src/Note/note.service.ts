@@ -44,8 +44,11 @@
 //   }
 // }
 
-
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Note } from '@prisma/client';
 
@@ -114,4 +117,13 @@ export class NoteService {
       where: { id },
     });
   }
+
+// notes.service.ts
+async removeAll(userId: number): Promise<{ deletedCount: number }> {
+  const result = await this.prisma.note.deleteMany({
+    where: { userId }, // ensures only this user's notes are deleted
+  });
+
+  return { deletedCount: result.count };
+}
 }

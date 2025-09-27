@@ -93,29 +93,32 @@ import { TransactionsService } from './transactions.service';
 import { Prisma, TransactionType } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-
 @Controller('transactions')
 @UseGuards(JwtAuthGuard) // 👈 protect all endpoints
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-@Post()
-async create(@Body() data: {
-  category: string;
-  amount: number;
-  type: string;
-  note?: string;
-  date?: string;
-  account?: string;
-}, @Request() req: any) {
-  console.log('User from JWT:', req.user);
-  return this.transactionsService.create({
-    ...data,
-    userId: req.user.userId,  // ✅ secure
-    type: data.type as TransactionType,
-    date: data.date ?? new Date().toISOString(),
-  });
-}
+  @Post()
+  async create(
+    @Body()
+    data: {
+      category: string;
+      amount: number;
+      type: string;
+      note?: string;
+      date?: string;
+      account?: string;
+    },
+    @Request() req: any,
+  ) {
+    console.log('User from JWT:', req.user);
+    return this.transactionsService.create({
+      ...data,
+      userId: req.user.userId, // ✅ secure
+      type: data.type as TransactionType,
+      date: data.date ?? new Date().toISOString(),
+    });
+  }
   // ✅ Get all for current user
   @Get()
   async findAll(@Request() req: any) {
@@ -143,5 +146,17 @@ async create(@Body() data: {
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     return this.transactionsService.delete(id, req.user.userId);
+  }
+  // Delete all transactions for the logged-in user
+  // @Delete('all/:userId')
+  // async deleteAll(@Request() req: any) {
+  //   console.log('transactionwork',req.user.userId);
+  //   return this.transactionsService.deleteAll(req.user.userId);
+  // }
+  @Delete('all/:userId') // now expects a numeric string in URL
+  async removeAll(@Param('userId', ParseIntPipe) userId: number) {
+    // Prisma expects a number
+    console.log('transactionwork',userId);
+    return this.transactionsService.deleteAll(userId);
   }
 }
